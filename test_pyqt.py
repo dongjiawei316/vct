@@ -34,6 +34,6 @@ class Example(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Example()
-    os.system(r"ffplay.exe 1.ts -x 800 -y 600 ")
+   # os.system(r"ffplay.exe 1.ts -x 800 -y 600 ")
 
     sys.exit(app.exec_())
