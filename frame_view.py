@@ -12,16 +12,15 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from cv2 import *
 import _thread as thread
+import threading
 
-probe = ffmpeg.probe('resource/1.ts')
-video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
-width = int(video_info['width'])
-height = int(video_info['height'])
+# udp://192.165.53.18:22000
+#probe = ffmpeg.probe('resource/1.ts')
 
 mapp = QApplication(sys.argv)
 win = QWidget()
 pictureLabel = QLabel()
-init_image = QPixmap("resource/cat.jpeg").scaled(640, 480)
+init_image = QPixmap("resource/cat.jpeg").scaled(1280, 720)
 pictureLabel.setPixmap(init_image)
 
 layout = QVBoxLayout()
@@ -31,10 +30,13 @@ win.setLayout(layout)
 win.show()
 print("QWidget ok!")
 
+width = 1280
+height = 720
+
 process1 = (
     ffmpeg
-    .input("resource/1.ts")
-    .output('pipe:', format='rawvideo', pix_fmt='rgb24')
+    .input("udp://192.165.53.18:24000")
+    .output('pipe:', format='rawvideo', pix_fmt='rgb24',s='{}x{}'.format(width, height))
     .run_async(pipe_stdout=True)
 )
 
@@ -51,12 +53,9 @@ def extract_frame(process1):
                 .reshape([height, width,3])
         )
 
-        frame = cv2.resize(in_frame, (640, 480))
-        temp_image = QImage(frame, 640, 480, QImage.Format_RGB888)
+        temp_image = QImage(in_frame, width, height, QImage.Format_RGB888)
         temp_pixmap = QPixmap.fromImage(temp_image)
         pictureLabel.setPixmap(temp_pixmap)
-        time.sleep(0.04)
-
 
 thread.start_new_thread( extract_frame, (process1, ) )
 
