@@ -9,9 +9,11 @@ import numpy as np
 import time
 import _thread as thread
 import threading
+import pyaudio
 
 resname = 'resource/1.ts'
 #resname = 'in.mp4'
+CHUNK = 1024
 
 def decode_audio(in_filename, **input_kwargs):
     try:
@@ -36,20 +38,25 @@ class myThread(threading.Thread):  # 继承父类threading.Thread
     def run(self):  # 把要执行的代码写到run函数里面 线程在创建后会直接运行run函数
         print
         "Starting " + self.name
+        p = pyaudio.PyAudio()
+        stream = p.open(format=pyaudio.paInt16,
+                        channels=1,
+                        rate=16000,
+                        output=True)
         while True:
-            in_bytes = self.audio_data.stdout.read(16)
+            in_bytes = self.audio_data.stdout.read(CHUNK)
             if not in_bytes:
                break
-
-            print(in_bytes)
-        #in1 = ffmpeg.input(resname)
-        #a1 = in1.audio
-        #audio_data = a1.output('-', format='s16le', acodec='pcm_s16le', ac=1, ar='16k')
-        #audio_data.run()
-
+            stream.write(in_bytes)
         print
         "Exiting " + self.name
 
+        # 停止数据流
+        stream.stop_stream()
+        stream.close()
+
+        # 关闭 PyAudio
+        p.terminate()
 
 class Example(QWidget):
 
