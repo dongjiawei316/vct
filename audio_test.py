@@ -17,12 +17,10 @@ CHUNK = 1024
 
 def decode_audio(in_filename, **input_kwargs):
     try:
-        process1 = (ffmpeg
-            .input(in_filename, **input_kwargs)
-            .output('pipe:', format='s16le', acodec='pcm_s16le', ac=1, ar='16k')
-           # .overwrite_output()
-            .run_async(pipe_stdout=True)
-        )
+        stream_input=ffmpeg.input(in_filename, **input_kwargs)
+        audio_out = stream_input.audio.output('pipe:', format='s16le', acodec='pcm_s16le', ac=1, ar='16k')
+        process1 = audio_out.run_async(pipe_stdout=True)
+
     except ffmpeg.Error as e:
         print(e.stderr, file=sys.stderr)
         sys.exit(1)
